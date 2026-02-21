@@ -1,34 +1,62 @@
+/* RESET */
+* {
+    box-sizing: border-box;
+}
+
+/* BODY CENTERING */
 body {
-    font-family: Arial;
-    background: #f4f6f9;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef1f5;
+    min-height: 100vh;
+
     display: flex;
     justify-content: center;
-    margin-top: 50px;
+    align-items: center;
 }
 
+/* MOBILE FALLBACK */
+@media (max-height: 700px) {
+    body {
+        align-items: flex-start;
+        padding: 40px 0;
+    }
+}
+
+/* MAIN CARD */
 .container {
-    width: 400px;
+    width: 92%;
+    max-width: 850px;
     background: white;
-    padding: 20px;
-    box-shadow: 0 0 10px #ccc;
-    border-radius: 10px;
-    text-align: center;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }
 
+/* HEADER */
+h1 {
+    margin-top: 0;
+}
+
+/* TEXTAREA */
 textarea {
     width: 100%;
     height: 150px;
-    padding: 10px;
-    font-size: 16px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
+/* BUTTONS */
 button {
-    padding: 8px 15px;
-    margin: 5px;
+    padding: 8px 14px;
+    margin: 5px 5px 10px 0;
     border: none;
     background: #007bff;
     color: white;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
@@ -36,17 +64,194 @@ button:hover {
     background: #0056b3;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
+/* NOTES GRID */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+    margin-top: 20px;
 }
 
-li {
-    background: #f1f1f1;
-    padding: 10px;
-    margin: 8px 0;
-    border-radius: 5px;
+/* NOTE CARD */
+.note-card {
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+}
+
+.top-bar {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     align-items: center;
+    margin-bottom: 15px;
+}
+/* top controls layout */
+.top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* search styling */
+#searchBox {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* card polish */
+.note-card {
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.07);
+    transition: 0.25s ease;
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+}
+
+/* buttons inside cards */
+.note-body {
+    margin-bottom: 12px;
+}
+
+.note-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+#categoryInput {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 8px;
+    font-size: 14px;
+}
+.note-tag {
+    display: inline-block;
+    background: #e7f0ff;
+    color: #1a5ad7;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+#toast {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #333;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.3s ease;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#toast.success {
+    background: #28a745;
+}
+
+#toast.error {
+    background: #dc3545;
+}
+/* pinned notes highlight */
+.note-card.pinned {
+    background: linear-gradient(135deg, #4b3b1e, #2c2412);
+    color: white;
+}
+
+.note-card.pinned .note-text,
+.note-card.pinned .note-date {
+    color: #fff;
+}
+
+/* dark mode support */
+body.dark .note-card.pinned {
+    background: #3b3423;
+    border-left: 5px solid #ffb74d;
+}
+/* pinned badge */
+.pin-badge {
+    display: inline-block;
+    background: #ff9800;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+/* import file input */
+#importFile {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: white;
+}
+body.dark {
+    background: #121212;
+    color: #eee;
+}
+
+body.dark .note-card {
+    background: #1f1f1f;
+    color: white;
+}
+
+body.dark button {
+    background: #2d7df6;
+}
+/* ===== DARK MODE FULL FIX ===== */
+
+body.dark {
+    background: #0f1115;
+    color: #e6e6e6;
+}
+
+body.dark .container,
+body.dark .card,
+body.dark .notepad-container {
+    background: #1a1d23;
+    color: #ffffff;
+}
+
+body.dark textarea,
+body.dark input {
+    background: #111318;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+body.dark button {
+    background: #3a7bfd;
+    color: white;
+}
+
+body.dark .note-card {
+    background: #1e222a;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }

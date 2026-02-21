@@ -8,18 +8,26 @@
 
 <div class="container">
     <h1>📝 Notepad</h1>
-
+    <button onclick="toggleDarkMode()">🌙</button>
     <textarea id="noteInput" placeholder="Write your note here..."></textarea>
-
+    <input type="text" id="categoryInput" placeholder="Category (Work, Study, Personal...)">
     <br><br>
-
+    <label>Note Color:</label>
+<select id="colorInput">
+    <option value="">Default</option>
+    <option value="#fff59d">Yellow</option>
+    <option value="#bbdefb">Blue</option>
+    <option value="#c8e6c9">Green</option>
+    <option value="#ffcdd2">Red</option>
+    <option value="#e1bee7">Purple</option>
+</select>
     <button onclick="saveNote()">Save Note</button>
 
     <a href="saved.html">
         <button>View Saved Notes</button>
     </a>
 </div>
-
+<div id="toast"></div>
 <script src="script.js"></script>
 </body>
 </html>
