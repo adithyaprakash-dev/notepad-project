@@ -1,3 +1,6 @@
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
 let notes = JSON.parse(localStorage.getItem("notes")) || [];
 let editingIndex = null;
 // AUTO SAVE WHILE TYPING
@@ -29,12 +32,17 @@ document.addEventListener("DOMContentLoaded", () => {
             if (colorInput) colorInput.value = note.color || "";
         }
     }
+    checkReminders(); // run immediately when page loads
 });
 // SAVE NOTE
 function saveNote() {
     const input = document.getElementById("noteInput");
     const categoryInput = document.getElementById("categoryInput");
     const colorInput = document.getElementById("colorInput");
+
+    // 👉 NEW reminder inputs
+    const reminderDateInput = document.getElementById("reminderDate");
+    const reminderTimeInput = document.getElementById("reminderTime");
 
     if (!input) return;
 
@@ -47,7 +55,10 @@ function saveNote() {
     const category = categoryInput ? categoryInput.value.trim() : "";
     const color = colorInput ? colorInput.value : "";
 
-    // 🔎 check if editing
+    // 👉 NEW reminder values
+    const reminderDate = reminderDateInput ? reminderDateInput.value : "";
+    const reminderTime = reminderTimeInput ? reminderTimeInput.value : "";
+
     const editIndex = localStorage.getItem("editIndex");
 
     if (editIndex !== null) {
@@ -56,20 +67,27 @@ function saveNote() {
             ...notes[editIndex],
             text,
             category,
-            color
+            color,
+            reminderDate,
+            reminderTime
         };
         localStorage.removeItem("editIndex");
         showToast("Note updated");
     } else {
         // 🆕 CREATE NEW NOTE
         const note = {
-            text,
-            date: new Date().toLocaleString(),
-            pinned: false,
-            archived: false,
-            category,
-            color
-        };
+    text,
+    date: new Date().toLocaleString(),
+    timestamp: Date.now(),
+    pinned: false,
+    archived: false,
+    category,
+    color,
+    reminderDate,
+    reminderTime,
+    reminded: false,
+    checklist: []   // ⭐ NEW FIELD
+};
         notes.push(note);
         showToast("Note saved");
     }
@@ -80,6 +98,8 @@ function saveNote() {
     input.value = "";
     if (categoryInput) categoryInput.value = "";
     if (colorInput) colorInput.value = "";
+    if (reminderDateInput) reminderDateInput.value = "";
+    if (reminderTimeInput) reminderTimeInput.value = "";
 
     displayNotes?.();
 }
@@ -102,27 +122,32 @@ let notesWithIndex = notes
     .map((note, index) => ({ ...note, originalIndex: index }))
     .filter(note => !note.archived);
 
-// ===== SORTING =====
+// ===== SORTING (PRO VERSION) =====
 
-if (sortType === "new") {
-    notesWithIndex.sort((a, b) => new Date(b.date) - new Date(a.date));
+notesWithIndex.sort((a, b) => {
+
+    // Always keep pinned notes on top
+    if (a.pinned !== b.pinned) {
+        return b.pinned - a.pinned;
+    }
+
+    // Apply dropdown sort inside pinned/unpinned groups
+    if (sortType === "new") {
+    return (b.timestamp || 0) - (a.timestamp || 0);
 }
 
 if (sortType === "old") {
-    notesWithIndex.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return (a.timestamp || 0) - (b.timestamp || 0);
 }
 
-if (sortType === "pinned") {
-    notesWithIndex.sort((a, b) => b.pinned - a.pinned);
-}
+    if (sortType === "category") {
+        return (a.category || "").localeCompare(b.category || "");
+    }
 
-if (sortType === "category") {
-    notesWithIndex.sort((a, b) =>
-        (a.category || "").localeCompare(b.category || "")
-    );
-}
+    return 0;
+});
     // Sort pinned first
-    notesWithIndex.sort((a, b) => b.pinned - a.pinned);
+   
 
    notesWithIndex.forEach(note => {
     const card = document.createElement("div");
@@ -138,7 +163,13 @@ if (sortType === "category") {
         ${note.category ? `<span class="note-tag">${note.category}</span>` : ""}
         <input type="checkbox" class="note-select" data-index="${note.originalIndex}">
         <p class="note-text">${note.text}</p>
-        <small class="note-date">${note.date}</small>
+<small class="note-date">${note.date}</small>
+
+${note.reminderDate ? `
+    <p class="reminder">
+        ⏰ ${note.reminderDate} ${note.reminderTime || ""}
+    </p>
+` : ""}
     </div>
 
     <div class="note-actions">
@@ -385,4 +416,33 @@ function setArchiveVisible(isOpen) {
     if (!section) return;
 
     section.style.display = isOpen ? "grid" : "none";
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+setInterval(checkReminders, 30000); // check every 30 seconds
+// CHECK REMINDERS AND SHOW NOTIFICATIONS
+function checkReminders() {
+    const now = new Date();
+
+    notes.forEach(note => {
+
+        if (!note.reminderDate || note.reminded) return;
+
+        const reminderTime = note.reminderTime || "00:00";
+        const reminder = new Date(`${note.reminderDate} ${reminderTime}`);
+
+        if (now >= reminder) {
+
+            if (Notification.permission === "granted") {
+                new Notification("📝 Reminder", {
+                    body: note.text.substring(0, 80)
+                });
+            }
+
+            note.reminded = true;
+            localStorage.setItem("notes", JSON.stringify(notes));
+        }
+    });
 }

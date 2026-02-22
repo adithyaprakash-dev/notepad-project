@@ -3,6 +3,8 @@
 <head>
     <title>My Notepad</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
 </head>
 <body>
 
@@ -11,6 +13,8 @@
     <button onclick="toggleDarkMode()">🌙</button>
     <textarea id="noteInput" placeholder="Write your note here..."></textarea>
     <input type="text" id="categoryInput" placeholder="Category (Work, Study, Personal...)">
+    <input type="date" id="reminderDate">
+<input type="time" id="reminderTime">
     <br><br>
     <label>Note Color:</label>
 <select id="colorInput">
