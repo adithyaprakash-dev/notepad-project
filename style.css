@@ -25,12 +25,10 @@ body {
 
 /* MAIN CARD */
 .container {
-    width: 92%;
-    max-width: 850px;
-    background: white;
-    padding: 30px;
-    border-radius: 14px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    max-width: 800px;
+    width: 95%;
+    margin: auto;
+    padding: 15px;
 }
 
 /* HEADER */
@@ -41,12 +39,10 @@ h1 {
 /* TEXTAREA */
 textarea {
     width: 100%;
-    height: 150px;
-    padding: 12px;
-    margin: 15px 0;
-    font-size: 15px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    min-height: 140px;
+    font-size: 16px;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 /* BUTTONS */
@@ -58,18 +54,39 @@ button {
     color: white;
     border-radius: 6px;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
+/* Hover effect stays same */
 button:hover {
     background: #0056b3;
+}
+
+/* 📱 Mobile layout */
+@media (max-width: 600px) {
+    button {
+        width: 100%;
+        margin: 6px 0;
+    }
 }
 
 /* NOTES GRID */
 .notes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
-    margin-top: 20px;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 600px) {
+    .notes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .notes-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* NOTE CARD */
@@ -254,4 +271,435 @@ body.dark .note-card {
     background: #1e222a;
     color: #fff;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.note-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.note-actions button {
+    flex: 1 1 auto;
+    padding: 6px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+@media (max-width: 600px) {
+    .note-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .note-actions button {
+        padding: 5px 6px;
+        font-size: 11px;
+    }
+}
+/* dark mode dropdown */
+body.dark .menu-dropdown {
+    background: #23272f;
+}
+
+body.dark .menu-dropdown button:hover {
+    background: #2f3540;
+}
+.note-actions {
+    display: none;
+}
+.note-card {
+    position: relative;   /* REQUIRED for menu positioning */
+}
+/* ===== FINAL 3 DOT MENU STYLE ===== */
+
+/* needed for positioning */
+.note-card {
+    position: relative;
+}
+
+/* 3 dots button */
+.menu-btn {
+    position: absolute;
+    border: none;
+    background: rgba(0,0,0,0.05);
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.menu-btn:hover {
+    background: rgba(0,0,0,0.12);
+}
+
+
+/* dark mode */
+body.dark .note-menu {
+    background: #1f2430;
+}
+
+body.dark .note-menu button {
+    color: #fff;
+}
+
+body.dark .note-menu button:hover {
+    background: #2a3142;
+}
+
+body.dark .menu-btn {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+body.dark .menu-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+.menu-btn {
+    background: rgba(0,0,0,0.08);
+    border-radius: 6px;
+    padding: 3px 8px;
+    line-height: 1;
+    color: #222;
+}
+
+/* on colored notes */
+.note-card .menu-btn {
+    color: #333;
+}
+
+/* dark mode */
+body.dark .menu-btn {
+    background: rgba(255,255,255,0.08);
+    color: #eee;
+}
+.menu-dropdown {
+    z-index: 999;
+}
+/* ===== FINAL WORKING DROPDOWN ===== */
+
+.menu-dropdown {
+    position: absolute;
+    top: 38px;
+    right: 10px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+    display: none;
+    flex-direction: column;
+    z-index: 999;
+    overflow: hidden;
+}
+
+.menu-dropdown.show {
+    display: flex;
+}
+
+.menu-dropdown button {
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    color: #333;
+}
+
+.menu-dropdown button:hover {
+    background: #f1f5ff;
+}
+
+/* dark mode */
+body.dark .menu-dropdown {
+    background: #1f2430;
+}
+
+body.dark .menu-dropdown button {
+    color: white;
+}
+
+body.dark .menu-dropdown button:hover {
+    background: #2a3142;
+}
+.note-card {
+    position: relative;
+    overflow: visible;
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 35px;
+    right: 10px;
+    z-index: 9999;
+}
+/* MODAL BACKDROP */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+/* MODAL BOX */
+.modal-box {
+    background: white;
+    padding: 22px 26px;
+    border-radius: 14px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    animation: pop 0.25s ease;
+}
+
+.modal-box h3 {
+    margin-top: 0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+}
+
+.modal-actions button {
+    flex: 1;
+    margin: 0 5px;
+}
+
+.modal-actions .danger {
+    background: #e53935;
+}
+
+/* animation */
+@keyframes pop {
+    from { transform: scale(.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* dark mode */
+body.dark .modal-box {
+    background: #1f2430;
+    color: white;
+}
+
+/* ===== COMPACT 3-DOT MENU ===== */
+
+.menu-dropdown button {
+    padding: 6px 10px;      /* smaller spacing */
+    font-size: 12px;        /* smaller text */
+    line-height: 1.2;
+}
+
+.menu-dropdown {
+    min-width: 120px;       /* smaller box */
+}
+
+/* optional: smaller icons spacing */
+.menu-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+#exportBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* ===== REMINDER SECTION UI ===== */
+
+.reminder-section {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f3f6fb;
+    border: 1px solid #dde3ee;
+}
+
+.reminder-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3b4a66;
+    margin-bottom: 6px;
+}
+
+.reminder-inputs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reminder-inputs input {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #cfd6e3;
+    font-size: 13px;
+    background: white;
+}
+.reminder-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.reminder-inputs input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+/* ===== DARK MODE REMINDER FIX ===== */
+
+body.dark .reminder-section {
+    background: #1b212b;
+    border: 1px solid #303846;
+}
+
+body.dark .reminder-title {
+    color: #d9e1ff;
+}
+body.dark .reminder-field label {
+    color: #94a3b8;
+}
+body.dark .reminder-inputs input:focus {
+    border-color: #5b8cff;
+    box-shadow: 0 0 0 2px rgba(91,140,255,0.2);
+}
+
+/* Fix inputs visibility */
+body.dark #reminderDate,
+body.dark #reminderTime {
+    background: #0f141c;
+    border: 1px solid #3a4152;
+    color: #ffffff;
+}
+
+/* Fix calendar/time icon visibility in dark mode */
+body.dark input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.3);
+    cursor: pointer;
+}
+.reminder-hint {
+    font-size: 11px;
+    color: #8a94a6;
+    margin-top: 6px;
+}
+
+body.dark .reminder-hint {
+    color: #6b7280;
+}
+/* ===== NOTE HEADER ===== */
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.note-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* checkbox style */
+.note-select {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+/* mobile fix */
+@media (max-width:600px) {
+
+    .note-header {
+        gap: 4px;
+    }
+
+    .note-tag {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+/* ===== FINAL COMPACT 3 DOT MENU ===== */
+
+/* ensure card anchors menu */
+.note-card{
+    position:relative;
+    overflow:visible;
+}
+
+/* small 3 dots button */
+.menu-btn{
+    position:absolute;
+    top:6px;
+    right:6px;
+    font-size:15px;
+    padding:2px 6px;
+    border-radius:5px;
+    background:rgba(0,0,0,0.06);
+    z-index:20;
+}
+
+/* dropdown box */
+.menu-dropdown{
+    position:absolute;
+    top:32px;
+    right:6px;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 8px 18px rgba(0,0,0,0.18);
+    min-width:105px;
+    padding:4px 0;
+    display:none;
+    flex-direction:column;
+    z-index:30;
+}
+
+.menu-dropdown.show{
+    display:flex;
+}
+
+/* compact items */
+.menu-dropdown button{
+    padding:6px 10px;
+    font-size:12px;
+    line-height:1.2;
+    background:none;
+    border:none;
+    text-align:left;
+    cursor:pointer;
+}
+
+/* hover */
+.menu-dropdown button:hover{
+    background:#f3f6ff;
+}
+
+/* dark mode */
+body.dark .menu-dropdown{
+    background:#1f2430;
+}
+
+body.dark .menu-dropdown button:hover{
+    background:#2a3142;
+}
+/* ===== FORCE FINAL MENU SIZE ===== */
+
+.note-card .menu-btn{
+    top:6px !important;
+    right:6px !important;
+    font-size:14px !important;
+    padding:2px 6px !important;
+}
+
+.note-card .menu-dropdown{
+    top:30px !important;
+    right:6px !important;
+    min-width:100px !important;
+    padding:3px 0 !important;
+}
+
+.note-card .menu-dropdown button{
+    padding:5px 10px !important;
+    font-size:12px !important;
+    gap:5px !important;
 }

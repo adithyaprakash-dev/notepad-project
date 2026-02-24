@@ -4,6 +4,7 @@
     <title>My Notepad</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
 </head>
 <body>
@@ -13,8 +14,23 @@
     <button onclick="toggleDarkMode()">🌙</button>
     <textarea id="noteInput" placeholder="Write your note here..."></textarea>
     <input type="text" id="categoryInput" placeholder="Category (Work, Study, Personal...)">
-    <input type="date" id="reminderDate">
-<input type="time" id="reminderTime">
+   <div class="reminder-section">
+    <div class="reminder-title">Reminder Settings</div>
+
+    <div class="reminder-inputs">
+        <div class="reminder-field">
+            <label>Date</label>
+            <input type="date" id="reminderDate">
+        </div>
+
+        <div class="reminder-field">
+            <label>Time</label>
+            <input type="time" id="reminderTime">
+            <div class="reminder-hint">Optional: Get notified at this time</div>
+        </div>
+    </div>
+</div>
+
     <br><br>
     <label>Note Color:</label>
 <select id="colorInput">
@@ -32,6 +48,8 @@
     </a>
 </div>
 <div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

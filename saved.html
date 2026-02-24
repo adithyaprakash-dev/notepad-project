@@ -3,6 +3,7 @@
 <head>
     <title>Saved Notes</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -15,7 +16,12 @@
     <option value="category">Category A–Z</option>
 </select>
     <div class="top-bar">
-    <button onclick="exportNotes()">⬇ Export Notes</button>
+    <input type="text" id="pdfTitle" placeholder="Enter PDF title (optional)">
+    <p id="selectionCount">No notes selected</p>
+<button id="exportBtn" onclick="exportPDF()" disabled>
+    📄 Export Selected Notes
+</button>
+    
     <input type="file" id="importFile" accept=".json" onchange="importNotes(event)">
     <input type="text" id="searchBox" placeholder="Search notes..." onkeyup="searchNotes()">
 </div>
@@ -33,6 +39,18 @@
     </a>
 </div>
 <div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="script.js"></script>
+<div id="deleteModal" class="modal">
+  <div class="modal-box">
+    <h3>Delete note?</h3>
+    <p>This action cannot be undone.</p>
+
+    <div class="modal-actions">
+      <button onclick="closeDeleteModal()">Cancel</button>
+      <button class="danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

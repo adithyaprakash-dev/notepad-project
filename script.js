@@ -7,8 +7,9 @@ let editingIndex = null;
 document.addEventListener("DOMContentLoaded", () => {
     displayNotes();
     displayArchivedNotes();
-    populateCategoryFilter?.();
-
+    if (typeof populateCategoryFilter === "function") {
+    populateCategoryFilter();
+}
     // Dark mode restore
     if (localStorage.getItem("darkMode") === "true") {
         document.body.classList.add("dark");
@@ -172,14 +173,17 @@ ${note.reminderDate ? `
 ` : ""}
     </div>
 
-    <div class="note-actions">
+<div class="note-menu">
+  <button class="menu-btn" onclick="toggleMenu(this)">⋮</button>
+<div class="menu-dropdown">
         <button onclick="togglePin(${note.originalIndex})">
             ${note.pinned ? "📌 Unpin" : "📍 Pin"}
         </button>
-        <button onclick="editNote(${note.originalIndex})">Edit</button>
-        <button onclick="toggleArchive(${note.originalIndex})">Archive</button>
-        <button onclick="deleteNote(${note.originalIndex})">Delete</button>
+        <button onclick="editNote(${note.originalIndex})">✏️ Edit</button>
+        <button onclick="toggleArchive(${note.originalIndex})">📦 Archive</button>
+        <button onclick="deleteNote(${note.originalIndex})">🗑 Delete</button>
     </div>
+</div>
 `;
 
         list.appendChild(card);
@@ -194,12 +198,27 @@ ${note.reminderDate ? `
 
 
 // DELETE NOTE WITH CONFIRM
-function deleteNote(index) {
-    if (!confirm("Delete this note?")) return;
+let deleteIndex = null;
 
-    notes.splice(index, 1);
+function deleteNote(index) {
+    deleteIndex = index;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+
+function closeDeleteModal() {
+    document.getElementById("deleteModal").style.display = "none";
+}
+
+function confirmDelete() {
+    if (deleteIndex === null) return;
+
+    notes.splice(deleteIndex, 1);
     localStorage.setItem("notes", JSON.stringify(notes));
+
+    closeDeleteModal();
     displayNotes();
+    displayArchivedNotes();
+    showToast("Note deleted");
 }
 // SEARCH NOTES
 function searchNotes() {
@@ -226,21 +245,33 @@ function searchNotes() {
         card.className = note.pinned ? "note-card pinned" : "note-card";
 
         card.innerHTML = `
-            <div class="note-body">
-                ${note.category ? `<span class="note-tag">${note.category}</span>` : ""}
-                <p class="note-text">${note.text}</p>
-                <small class="note-date">${note.date}</small>
-            </div>
+<div class="note-menu">
+   <button class="menu-btn" onclick="toggleMenu(this)">⋮</button>
 
-            <div class="note-actions">
-                <button onclick="togglePin(${note.originalIndex})">
-                    ${note.pinned ? "📌 Unpin" : "📍 Pin"}
-                </button>
-                <button onclick="editNote(${note.originalIndex})">Edit</button>
-                <button onclick="deleteNote(${note.originalIndex})">Delete</button>
-            </div>
-        `;
+    <div class="menu-dropdown">
+        <button onclick="togglePin(${note.originalIndex})">
+            ${note.pinned ? "📌 Unpin" : "📍 Pin"}
+        </button>
+        <button onclick="editNote(${note.originalIndex})">✏️ Edit</button>
+        <button onclick="toggleArchive(${note.originalIndex})">📦 Archive</button>
+        <button onclick="deleteNote(${note.originalIndex})">🗑 Delete</button>
+    </div>
+</div>
 
+<div class="note-body">
+    ${note.pinned ? `<span class="pin-badge">📌 Pinned</span>` : ""}
+    ${note.category ? `<span class="note-tag">${note.category}</span>` : ""}
+    <input type="checkbox" class="note-select" data-index="${note.originalIndex}">
+    <p class="note-text">${note.text}</p>
+    <small class="note-date">${note.date}</small>
+
+    ${note.reminderDate ? `
+        <p class="reminder">
+            ⏰ ${note.reminderDate} ${note.reminderTime || ""}
+        </p>
+    ` : ""}
+</div>
+`;
         list.appendChild(card);
     });
 }
@@ -273,34 +304,7 @@ function togglePin(index) {
     localStorage.setItem("notes", JSON.stringify(notes));
     displayNotes();
 }
-// EXPORT NOTES AS JSON
-function exportNotes() {
-    const checkboxes = document.querySelectorAll(".note-select:checked");
 
-    if (checkboxes.length === 0) {
-       showToast("Select at least one note to export", "error");
-        return;
-    }
-
-    const selectedNotes = [];
-
-    checkboxes.forEach(cb => {
-        const index = cb.getAttribute("data-index");
-        selectedNotes.push(notes[index]);
-    });
-
-    const dataStr = JSON.stringify(selectedNotes, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-
-    a.href = url;
-    a.download = "selected-notes.json";
-    a.click();
-
-    URL.revokeObjectURL(url);
-}
 // TOAST NOTIFICATION
 function showToast(message, type = "success") {
     const toast = document.getElementById("toast");
@@ -319,35 +323,103 @@ function importNotes(event) {
     if (!file) return;
 
     const reader = new FileReader();
+    const name = file.name.toLowerCase();
 
     reader.onload = function(e) {
-        try {
-            const imported = JSON.parse(e.target.result);
 
-            if (!Array.isArray(imported)) {
-                showToast("Invalid file format", "error");
+        // ===== JSON IMPORT =====
+        if (name.endsWith(".json")) {
+            try {
+                const imported = JSON.parse(e.target.result);
+
+                if (!Array.isArray(imported)) {
+                    showToast("JSON must contain note list", "error");
+                    return;
+                }
+
+                const cleaned = imported.map(n => ({
+                    text: n.text || "Untitled note",
+                    date: n.date || new Date().toLocaleString(),
+                    timestamp: n.timestamp || Date.now(),
+                    pinned: n.pinned || false,
+                    archived: n.archived || false,
+                    category: n.category || "",
+                    color: n.color || "",
+                    reminderDate: n.reminderDate || "",
+                    reminderTime: n.reminderTime || "",
+                    reminded: false,
+                    checklist: n.checklist || []
+                }));
+
+                notes = [...notes, ...cleaned];
+                showToast("JSON notes imported");
+
+            } catch {
+                showToast("Invalid JSON file", "error");
                 return;
             }
-
-            // normalize imported notes
-            const cleaned = imported.map(n => ({
-                text: n.text || "",
-                date: n.date || new Date().toLocaleString(),
-                pinned: n.pinned || false,
-                category: n.category || ""
-            }));
-
-            notes = [...notes, ...cleaned];
-            localStorage.setItem("notes", JSON.stringify(notes));
-
-            showToast("Notes imported successfully");
-            displayNotes();
-            populateCategoryFilter();
-
-        } catch (err) {
-            console.error(err);
-            showToast("Invalid or corrupted file", "error");
         }
+
+        // ===== TXT IMPORT =====
+        else if (name.endsWith(".txt")) {
+
+            const lines = e.target.result.split("\n").filter(l => l.trim());
+
+            lines.forEach(line => {
+                notes.push({
+                    text: line.trim(),
+                    date: new Date().toLocaleString(),
+                    timestamp: Date.now(),
+                    pinned: false,
+                    archived: false,
+                    category: "",
+                    color: "",
+                    reminderDate: "",
+                    reminderTime: "",
+                    reminded: false,
+                    checklist: []
+                });
+            });
+
+            showToast("Text notes imported");
+        }
+
+        // ===== CSV IMPORT =====
+        else if (name.endsWith(".csv")) {
+
+            const rows = e.target.result.split("\n");
+
+            rows.forEach(row => {
+                const text = row.split(",")[0];
+                if (!text) return;
+
+                notes.push({
+                    text: text.trim(),
+                    date: new Date().toLocaleString(),
+                    timestamp: Date.now(),
+                    pinned: false,
+                    archived: false,
+                    category: "",
+                    color: "",
+                    reminderDate: "",
+                    reminderTime: "",
+                    reminded: false,
+                    checklist: []
+                });
+            });
+
+            showToast("CSV notes imported");
+        }
+
+        // ===== OTHER FILES =====
+        else {
+            showToast("Only JSON, TXT, CSV supported", "error");
+            return;
+        }
+
+        localStorage.setItem("notes", JSON.stringify(notes));
+        displayNotes();
+        displayArchivedNotes();
     };
 
     reader.readAsText(file);
@@ -381,28 +453,32 @@ function displayArchivedNotes() {
         .map((note, index) => ({ ...note, originalIndex: index }))
         .filter(note => note.archived);
 
-    // update counter
     const count = document.getElementById("archiveCount");
     if (count) count.textContent = archived.length;
 
     archived.forEach(note => {
-       const card = document.createElement("div");
-    card.className = "note-card";
+        const card = document.createElement("div");
+        card.className = "note-card";
 
-if (note.color) {
-    card.style.background = note.color;
-}
+        if (note.color) {
+            card.style.background = note.color;
+        }
+
         card.innerHTML = `
-            <div class="note-body">
-                ${note.category ? `<span class="note-tag">${note.category}</span>` : ""}
-                <p class="note-text">${note.text}</p>
-                <small>${note.date}</small>
-            </div>
+        <div class="note-body">
+            ${note.category ? `<span class="note-tag">${note.category}</span>` : ""}
+            <p class="note-text">${note.text}</p>
+            <small>${note.date}</small>
+        </div>
 
-            <div class="note-actions">
-                <button onclick="toggleArchive(${note.originalIndex})">Restore</button>
-                <button onclick="deleteNote(${note.originalIndex})">Delete</button>
+        <div class="note-menu">
+            <button class="menu-btn" onclick="toggleMenu(this)">⋮</button>
+
+            <div class="menu-dropdown">
+                <button onclick="toggleArchive(${note.originalIndex})">📤 Restore</button>
+                <button onclick="deleteNote(${note.originalIndex})">🗑 Delete</button>
             </div>
+        </div>
         `;
 
         list.appendChild(card);
@@ -446,3 +522,137 @@ function checkReminders() {
         }
     });
 }
+document.addEventListener("click", function (e) {
+
+    const btn = e.target.closest(".menu-btn");
+
+    if (btn) {
+        const menu = btn.nextElementSibling;
+
+        document.querySelectorAll(".menu-dropdown")
+            .forEach(m => {
+                if (m !== menu) m.classList.remove("show");
+            });
+
+        menu.classList.toggle("show");
+        return;
+    }
+
+    document.querySelectorAll(".menu-dropdown")
+        .forEach(m => m.classList.remove("show"));
+});
+// EXPORT SELECTED NOTES AS PDF
+function exportPDF() {
+
+    const selected = document.querySelectorAll(".note-select:checked");
+
+    if (selected.length === 0) {
+        showToast("Select notes first", "error");
+        return;
+    }
+
+    if (!window.jspdf) {
+        showToast("PDF library missing", "error");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 22;
+
+    // ===== HEADER TITLE =====
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(20);
+
+    const customTitle = document.getElementById("pdfTitle")?.value.trim();
+    doc.text(customTitle || "My Notes", 105, y, { align: "center" });
+
+    y += 8;
+
+    // ===== DIVIDER LINE (clean app look) =====
+    doc.setDrawColor(200);
+    doc.line(20, y, 190, y);
+
+    y += 12;
+
+    // ===== LOOP THROUGH NOTES =====
+    selected.forEach((cb) => {
+
+        const index = parseInt(cb.getAttribute("data-index"));
+        const note = notes[index];
+        if (!note) return;
+
+        // Remove emojis to avoid PDF font crash
+        const safeText = note.text.replace(/[^\x00-\x7F]/g, "");
+
+        const lines = doc.splitTextToSize(safeText, 175);
+
+        // Dynamic card height
+        const cardHeight = lines.length * 6 + 22;
+
+        // New page if needed
+        if (y + cardHeight > 280) {
+            doc.addPage();
+            y = 22;
+        }
+
+        // Convert HEX to RGB
+        function hexToRgb(hex) {
+            hex = (hex || "#f5f5f5").replace("#", "");
+            const bigint = parseInt(hex, 16);
+            return [
+                (bigint >> 16) & 255,
+                (bigint >> 8) & 255,
+                bigint & 255
+            ];
+        }
+
+        const [r,g,b] = hexToRgb(note.color);
+
+        // ===== CARD BACKGROUND =====
+        doc.setFillColor(r,g,b);
+        doc.roundedRect(12, y, 186, cardHeight, 5, 5, "F");
+
+        // ===== CATEGORY =====
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(12);
+        doc.setTextColor(40);
+        doc.text(note.category || "Note", 18, y+10);
+
+        // ===== NOTE TEXT =====
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(11);
+        doc.setTextColor(20);
+        doc.text(lines, 18, y+18);
+
+        // ===== DATE =====
+        doc.setFontSize(9);
+        doc.setTextColor(90);
+        doc.text(note.date, 18, y + cardHeight - 5);
+
+        y += cardHeight + 12;
+    });
+
+    doc.save("My_Notes.pdf");
+    showToast("Professional PDF exported");
+}
+// ===== ENABLE EXPORT BUTTON WHEN NOTES SELECTED =====
+document.addEventListener("change", function(e){
+
+    if(!e.target.classList.contains("note-select")) return;
+
+    const checked = document.querySelectorAll(".note-select:checked").length;
+    const btn = document.getElementById("exportBtn");
+    const label = document.getElementById("selectionCount");
+
+    if(label){
+        label.textContent = checked === 0
+            ? "No notes selected"
+            : checked + " selected";
+    }
+
+    if(btn){
+        btn.disabled = checked === 0;
+    }
+});
